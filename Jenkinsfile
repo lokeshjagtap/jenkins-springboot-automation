@@ -1,11 +1,10 @@
 pipeline {
     agent any
-
     environment {
-        APP_NAME   = "MyApp"
-        WAR_FILE   = "target\\${APP_NAME}.war"   // use backslashes for Windows paths
+        APP_NAME = "MyApp"
+        WAR_FILE = "target/${APP_NAME}.war"
 
-        // Tomcat paths for each environment
+        // Tomcat paths
         TOMCAT_DEV  = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-1"
         TOMCAT_UAT  = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-2"
         TOMCAT_TLAB = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-3"
@@ -32,11 +31,9 @@ pipeline {
             steps {
                 echo "🚀 Deploying to DEV..."
                 bat """
-                del /Q %TOMCAT_DEV%\\webapps\\%APP_NAME%.war
-                xcopy /Y %WAR_FILE% %TOMCAT_DEV%\\webapps\\
-                set CATALINA_HOME=%TOMCAT_DEV%
-                %CATALINA_HOME%\\bin\\shutdown.bat
-                %CATALINA_HOME%\\bin\\startup.bat
+                    if exist %TOMCAT_DEV%\\webapps\\${APP_NAME}.war del /Q %TOMCAT_DEV%\\webapps\\${APP_NAME}.war
+                    %TOMCAT_DEV%\\bin\\startup.bat
+                    xcopy /Y ${WAR_FILE} %TOMCAT_DEV%\\webapps\\
                 """
             }
         }
@@ -45,11 +42,9 @@ pipeline {
             steps {
                 echo "🚀 Deploying to UAT..."
                 bat """
-                del /Q %TOMCAT_UAT%\\webapps\\%APP_NAME%.war
-                xcopy /Y %WAR_FILE% %TOMCAT_UAT%\\webapps\\
-                set CATALINA_HOME=%TOMCAT_UAT%
-                %CATALINA_HOME%\\bin\\shutdown.bat
-                %CATALINA_HOME%\\bin\\startup.bat
+                    if exist %TOMCAT_UAT%\\webapps\\${APP_NAME}.war del /Q %TOMCAT_UAT%\\webapps\\${APP_NAME}.war
+                    %TOMCAT_UAT%\\bin\\startup.bat
+                    xcopy /Y ${WAR_FILE} %TOMCAT_UAT%\\webapps\\
                 """
             }
         }
@@ -58,11 +53,9 @@ pipeline {
             steps {
                 echo "🚀 Deploying to TLAB..."
                 bat """
-                del /Q %TOMCAT_TLAB%\\webapps\\%APP_NAME%.war
-                xcopy /Y %WAR_FILE% %TOMCAT_TLAB%\\webapps\\
-                set CATALINA_HOME=%TOMCAT_TLAB%
-                %CATALINA_HOME%\\bin\\shutdown.bat
-                %CATALINA_HOME%\\bin\\startup.bat
+                    if exist %TOMCAT_TLAB%\\webapps\\${APP_NAME}.war del /Q %TOMCAT_TLAB%\\webapps\\${APP_NAME}.war
+                    %TOMCAT_TLAB%\\bin\\startup.bat
+                    xcopy /Y ${WAR_FILE} %TOMCAT_TLAB%\\webapps\\
                 """
             }
         }
@@ -74,11 +67,9 @@ pipeline {
                 }
                 echo "🚀 Deploying to PROD..."
                 bat """
-                del /Q %TOMCAT_PROD%\\webapps\\%APP_NAME%.war
-                xcopy /Y %WAR_FILE% %TOMCAT_PROD%\\webapps\\
-                set CATALINA_HOME=%TOMCAT_PROD%
-                %CATALINA_HOME%\\bin\\shutdown.bat
-                %CATALINA_HOME%\\bin\\startup.bat
+                    if exist %TOMCAT_PROD%\\webapps\\${APP_NAME}.war del /Q %TOMCAT_PROD%\\webapps\\${APP_NAME}.war
+                    %TOMCAT_PROD%\\bin\\startup.bat
+                    xcopy /Y ${WAR_FILE} %TOMCAT_PROD%\\webapps\\
                 """
             }
         }
