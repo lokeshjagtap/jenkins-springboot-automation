@@ -31,7 +31,12 @@ pipeline {
             steps {
                 echo "🚀 Deploying to DEV..."
                 bat """
-                    xcopy /Y ${WAR_FILE} %TOMCAT_DEV%\\webapps\\
+                    if exist "${WAR_FILE}" (
+                        copy /Y "${WAR_FILE}" "${TOMCAT_DEV}\\webapps\\${APP_NAME}.war"
+                    ) else (
+                        echo WAR file not found!
+                        exit /b 1
+                    )
                 """
             }
         }
@@ -40,7 +45,12 @@ pipeline {
             steps {
                 echo "🚀 Deploying to UAT..."
                 bat """
-                    xcopy /Y ${WAR_FILE} %TOMCAT_UAT%\\webapps\\
+                    if exist "${WAR_FILE}" (
+                        copy /Y "${WAR_FILE}" "${TOMCAT_UAT}\\webapps\\${APP_NAME}.war"
+                    ) else (
+                        echo WAR file not found!
+                        exit /b 1
+                    )
                 """
             }
         }
@@ -49,7 +59,12 @@ pipeline {
             steps {
                 echo "🚀 Deploying to TLAB..."
                 bat """
-                    xcopy /Y ${WAR_FILE} %TOMCAT_TLAB%\\webapps\\
+                    if exist "${WAR_FILE}" (
+                        copy /Y "${WAR_FILE}" "${TOMCAT_TLAB}\\webapps\\${APP_NAME}.war"
+                    ) else (
+                        echo WAR file not found!
+                        exit /b 1
+                    )
                 """
             }
         }
@@ -61,7 +76,12 @@ pipeline {
                 }
                 echo "🚀 Deploying to PROD..."
                 bat """
-                    xcopy /Y ${WAR_FILE} %TOMCAT_PROD%\\webapps\\
+                    if exist "${WAR_FILE}" (
+                        copy /Y "${WAR_FILE}" "${TOMCAT_PROD}\\webapps\\${APP_NAME}.war"
+                    ) else (
+                        echo WAR file not found!
+                        exit /b 1
+                    )
                 """
             }
         }
