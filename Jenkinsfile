@@ -2,9 +2,8 @@ pipeline {
     agent any
     environment {
         APP_NAME = "MyApp"
-        WAR_FILE = "target/${APP_NAME}.war"
+        WAR_FILE = "${WORKSPACE}\\target\\${APP_NAME}.war"
 
-        // Tomcat paths for each environment
         TOMCAT_DEV  = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-1"
         TOMCAT_UAT  = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-2"
         TOMCAT_TLAB = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-3"
@@ -33,6 +32,7 @@ pipeline {
                 bat """
                     if exist "${WAR_FILE}" (
                         copy /Y "${WAR_FILE}" "${TOMCAT_DEV}\\webapps\\${APP_NAME}.war"
+                        echo Deployment to DEV completed!
                     ) else (
                         echo WAR file not found!
                         exit /b 1
@@ -47,6 +47,7 @@ pipeline {
                 bat """
                     if exist "${WAR_FILE}" (
                         copy /Y "${WAR_FILE}" "${TOMCAT_UAT}\\webapps\\${APP_NAME}.war"
+                        echo Deployment to UAT completed!
                     ) else (
                         echo WAR file not found!
                         exit /b 1
@@ -61,6 +62,7 @@ pipeline {
                 bat """
                     if exist "${WAR_FILE}" (
                         copy /Y "${WAR_FILE}" "${TOMCAT_TLAB}\\webapps\\${APP_NAME}.war"
+                        echo Deployment to TLAB completed!
                     ) else (
                         echo WAR file not found!
                         exit /b 1
@@ -78,6 +80,7 @@ pipeline {
                 bat """
                     if exist "${WAR_FILE}" (
                         copy /Y "${WAR_FILE}" "${TOMCAT_PROD}\\webapps\\${APP_NAME}.war"
+                        echo Deployment to PROD completed!
                     ) else (
                         echo WAR file not found!
                         exit /b 1
