@@ -15,6 +15,7 @@ public class HelloController {
 
     @GetMapping("/hello")
     public String sayHello(@RequestParam(defaultValue = "World") String name) {
+    	System.out.println("sayHello method");
         return helloService.greet(name);
     }
 }
