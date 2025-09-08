@@ -4,6 +4,7 @@ pipeline {
         APP_NAME = "MyApp"
         WAR_FILE = "${WORKSPACE}\\target\\${APP_NAME}.war"
 
+        // Tomcat Paths (Windows)
         TOMCAT_DEV  = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-1"
         TOMCAT_UAT  = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-2"
         TOMCAT_TLAB = "C:\\Users\\Lokesh\\Applications\\apache-tomcat-9.0.108-3"
@@ -19,10 +20,58 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Unit Tests with Coverage') {
             steps {
-                echo "🧪 Running tests..."
-                bat "mvn test"
+                echo "🧪 Running tests + JaCoCo..."
+                bat "mvn test jacoco:report"
+            }
+            post {
+                always {
+                    // Publish JaCoCo coverage report in Jenkins
+                    jacoco execPattern: '**/target/jacoco.exec',
+                           classPattern: '**/target/classes',
+                           sourcePattern: '**/src/main/java',
+                           inclusionPattern: '**/*.class',
+                           exclusionPattern: ''
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                echo "🔍 Running SonarQube analysis..."
+                withSonarQubeEnv('MySonarQubeServer') { // Configure in Jenkins -> Manage Jenkins -> SonarQube
+                    bat "mvn sonar:sonar -Dsonar.projectKey=${APP_NAME}"
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                echo "✅ Checking SonarQube Quality Gate..."
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('AppScan Security Scan') {
+            steps {
+                echo "🛡️ Running AppScan..."
+                bat """
+                    "C:\\AppScan\\bin\\appscan.bat" scan ^
+                      -c "C:\\AppScan\\config\\appscan-config.xml" ^
+                      -n "${APP_NAME} Security Scan" ^
+                      -r "${WORKSPACE}\\results\\appscan-report.xml"
+                """
+            }
+        }
+
+        stage('Publish Reports') {
+            steps {
+                echo "📊 Publishing reports..."
+                junit '**/target/surefire-reports/*.xml'
+                archiveArtifacts artifacts: 'results/*.xml', fingerprint: true
             }
         }
 
@@ -43,6 +92,9 @@ pipeline {
 
         stage('Deploy to UAT') {
             steps {
+                script {
+                    input message: '✅ Tester approved? Deploy to UAT?', ok: 'Deploy'
+                }
                 echo "🚀 Deploying to UAT..."
                 bat """
                     if exist "${WAR_FILE}" (
@@ -58,6 +110,9 @@ pipeline {
 
         stage('Deploy to TLAB') {
             steps {
+                script {
+                    input message: '✅ Manager approved? Deploy to TLAB?', ok: 'Deploy'
+                }
                 echo "🚀 Deploying to TLAB..."
                 bat """
                     if exist "${WAR_FILE}" (
@@ -74,7 +129,7 @@ pipeline {
         stage('Deploy to PROD') {
             steps {
                 script {
-                    input message: '⚠️ Do you want to deploy to PROD?', ok: 'Deploy'
+                    input message: '⚠️ Final approval required! Deploy to PROD?', ok: 'Deploy'
                 }
                 echo "🚀 Deploying to PROD..."
                 bat """
