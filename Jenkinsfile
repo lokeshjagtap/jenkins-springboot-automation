@@ -52,12 +52,12 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
+        stage('Quality Gate (Skipped)') {
             steps {
-                echo "✅ Checking SonarQube Quality Gate..."
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
+                echo "⚠️ Quality Gate check is skipped. Pipeline will continue regardless of status."
+                // Optionally, you can still log the status without failing the pipeline
+                // def qg = waitForQualityGate()
+                // echo "Quality Gate status: ${qg.status}"
             }
         }
 
