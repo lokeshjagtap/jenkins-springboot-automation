@@ -27,7 +27,6 @@ pipeline {
             }
             post {
                 always {
-                    // Publish JaCoCo coverage report in Jenkins
                     jacoco execPattern: '**/target/jacoco.exec',
                            classPattern: '**/target/classes',
                            sourcePattern: '**/src/main/java',
@@ -40,8 +39,15 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "🔍 Running SonarQube analysis..."
-                withSonarQubeEnv('MySonarQubeServer') { // Configure in Jenkins -> Manage Jenkins -> SonarQube
-                    bat "mvn sonar:sonar -Dsonar.projectKey=${APP_NAME}"
+                withSonarQubeEnv('MySonarQubeServer') {
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        bat """
+                            mvn sonar:sonar ^
+                              -Dsonar.projectKey=${APP_NAME} ^
+                              -Dsonar.host.url=http://localhost:9000 ^
+                              -Dsonar.token=%SONAR_TOKEN%
+                        """
+                    }
                 }
             }
         }
@@ -49,7 +55,7 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 echo "✅ Checking SonarQube Quality Gate..."
-                timeout(time: 1, unit: 'HOURS') {
+                timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
